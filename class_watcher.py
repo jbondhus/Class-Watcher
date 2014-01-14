@@ -29,7 +29,7 @@ __version__ = "1.3 beta"
 search_url = "https://banner.stthomas.edu/pls/banner/prod/bwckschd.p_disp_listcrse?term_in=201420&subj_in=CISC&crse_in=210&crn_in=20807"
 
 # The path to the persistant storage database (this may be absolute or relative, but the program should (haven't tested this) throw an exception if it's read-only)
-database_path = "/usr/local/bin/class_watcher/CISC-210/persistent.db"
+database_path = "persistent.db"
 
 # Email Settings
 
