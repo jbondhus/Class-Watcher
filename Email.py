@@ -5,8 +5,7 @@ import smtplib
 import sys
 
 # Import the email modules we'll need
-from email.mime.text import MIMEText
-from email.Message import Message
+from email.message import Message
 
 # Version Information (follows semantic versioning - )
 # 1.0 - The initial release candidate (versions before this were undocumented)
