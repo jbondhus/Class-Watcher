@@ -23,32 +23,6 @@ __version__ = "1.3 beta"
 # thing is thathe __title__ variable must be set in order for this program to function (it's at the beginning of the
 # program)
 
-######################### START CONFIGURATION ###########################
-
-# The URL to scrape the information from
-search_url = "https://banner.stthomas.edu/pls/banner/prod/bwckschd.p_disp_listcrse?term_in=201420&subj_in=CISC&crse_in=210&crn_in=20807"
-
-# The path to the persistant storage database (this may be absolute or relative, but the program should (haven't tested this) throw an exception if it's read-only)
-database_path = "persistent.db"
-
-# Email Settings
-
-# The server settings
-hostname = "smtp.gmail.com:587" # The SMTP server hostname
-tls_enabled = True    # Whether or not TLS is enabled
-
-# The email username and password
-username = "jonathan.bondhus@gmail.com"
-password = "qiVBwGoHpLv4MV8MlB46i7PW76B7qPuS1VEEgmM9zF1JLVDjNMMngbgyJTODl4JBChtr42YOw7tBHQ9XjJZn0juqPVJdKsX7GvEa"
-
-from_name = __title__ # The name to appear in the from section
-from_address = "jonathan.bondhus@gmail.com" # The address the email message is being sent from
-to_address = "jonathan.bondhus@gmail.com" # The address the email message is being sent to
-
-priority = 1 # The priority of the message (1 is the highest, 3 is normal, 5 is the lowest)
-
-########################## END CONFIGURATION ############################
-
 def report_error(exception, user_message="Something has gone wrong, debugging information follows:\n\n"):
     """
     Reports any errors that arise
@@ -67,7 +41,14 @@ def report_error(exception, user_message="Something has gone wrong, debugging in
     try:
         emailer
     except:
-        emailer = Email(from_name, from_address, hostname, username, password, priority)
+        emailer = Email(
+            settings.email.from_name,
+            settings.email.from_address,
+            settings.email.hostname,
+            settings.email.username,
+            settings.email.password,
+            settings.email.priority
+        )
 
     write_message("An error has occured, an attempt will be made to email the information to the address you specified")
 
@@ -87,10 +68,17 @@ def initialize():
     global root
 
     # Initialize the email object first so that we can send an error message if something breaks
-    emailer = Email(from_name, from_address, hostname, username, password, priority)
+    emailer = Email(
+        settings.email.from_name,
+        settings.email.from_address,
+        settings.email.hostname,
+        settings.email.username,
+        settings.email.password,
+        settings.email.priority
+    )
 
     # Initialize the persistant database
-    storage = FileStorage.FileStorage(database_path)
+    storage = FileStorage.FileStorage(settings.database_path)
     db = DB(storage)
     connection = db.open()
     root = connection.root()
@@ -99,13 +87,13 @@ def initialize():
     try:
         root['section_info']
     except:
-        root['section_info'] = Section(search_url)
+        root['section_info'] = Section(settings.search_url)
         root['section_info'].update()
         transaction.commit()
 
     # Make sure the URL hasn't changed
-    if not root['section_info'].url_equals(search_url):
-        root['section_info'] = Section(search_url)
+    if not root['section_info'].url_equals(settings.search_url):
+        root['section_info'] = Section(settings.search_url)
         root['section_info'].update()
         transaction.commit()
         # If it has, update the database, notify the user, and quit
@@ -151,10 +139,10 @@ def notify(is_section_open, course_name):
 
     if is_section_open:
         subject = "The course " + course_name + " has opened for registration!" # The subject of the email message
-        message = "Go to the following link to view it and verify: \n\n" + search_url
+        message = "Go to the following link to view it and verify: \n\n" + settings.search_url
     else:
         subject = "The course " + course_name + " has closed for registration!" # The subject of the email message
-        message = "Go to the following link to view it and verify: \n\n" + search_url   
+        message = "Go to the following link to view it and verify: \n\n" + settings.search_url
     emailer.send(to_address, subject, message)
 
 def write_message(message):
@@ -171,6 +159,10 @@ def write_message(message):
 
 # Try importing the required modules, attempt to email the error if something goes wrong
 try:
+    # Import settings values
+    from Settings import Settings
+    settings = Settings()
+
     # Import the traceback module for retrieving tracback information from exceptions
     import traceback
 

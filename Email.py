@@ -1,6 +1,9 @@
 # Import smtplib for the actual sending functionality
 import smtplib
 
+# Import sys for exiting
+import sys
+
 # Import the email modules we'll need
 from email.mime.text import MIMEText
 from email.Message import Message
