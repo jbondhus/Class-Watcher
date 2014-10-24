@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
-__title__ = "Class Monitoring Bot" # Emails the specified email when a class has a free spot
+__title__ = "Class Monitoring Bot"
 __author__ = "Jonathan Bondhus"
-__version__ = "1.3 beta"
+__version__ = "1.4 beta"
 
 ## Version Information
 # 0.1 alpha - Initial prototype
@@ -13,15 +13,10 @@ __version__ = "1.3 beta"
 #            so withstanding a server error or corrupted python installation they should always be installed)
 # 1.2 beta - Added tracebacks to email reports and modified email reporting method parameters
 # 1.3 beta - Fixed bugs with searching for the course name, improved reliability of matches
+# 1.3 beta - Modified for python 3, moved settings to separate file
 
 ## TODO
 # - Add persistant storage for last error so that multiple error messages aren't sent repeatedly upon error
-
-## Important Information - Please Read
-# This program must be as fail-safe as possible, so import the modules in a try-except (with the email module going
-# first) so that unless there is an error with the email module errors can be reported via email. Another important
-# thing is thathe __title__ variable must be set in order for this program to function (it's at the beginning of the
-# program)
 
 def report_error(exception, user_message="Something has gone wrong, debugging information follows:\n\n"):
     """
