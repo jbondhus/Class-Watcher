@@ -4,12 +4,13 @@ import smtplib
 # Import the email modules we'll need
 from email.message import Message
 
-# Version Information (follows semantic versioning - )
+# Version Information (follows semantic versioning)
 # 1.0 - The initial release candidate (versions before this were undocumented)
+# 1.1 - Reformatted exception handling
 
 # This class defines email objects. They are constructed with the server and sender information, and sent with the send method
 class Email:
-    def __init__(self, from_name, from_address, hostname, username, password, priority=3, tls_enabled=True):
+    def __init__(self, from_name, from_address, hostname, username, password, priority=3, tls_enabled=True, force_tls=True):
         """
         Constructs an email object
 
@@ -32,6 +33,8 @@ class Email:
             raise TypeError("The priority must be an integer between 0 and 5")
         if not isinstance(tls_enabled, bool):
             raise TypeError("Whether tls is enabled must be a boolean value")
+        if not isinstance(force_tls, bool):
+            raise TypeError("Whether tls is forced must be a boolean value")
 
         self.hostname = str(hostname)
         self.from_name = str(from_name)
@@ -40,6 +43,7 @@ class Email:
         self.password = str(password)
         self.priority = int(priority)
         self.tls_enabled = bool(tls_enabled)
+        self.force_tls = bool(force_tls)
 
     def send(self, to_address, subject, message):
         """
@@ -72,9 +76,8 @@ class Email:
         # Try to connect to the server
         try:
             server = smtplib.SMTP(self.hostname, timeout=5)
-        except:
-            self.write_message("Please check your hostname settings!")
-            exit(1)
+        except Exception as e:
+            raise Exception("Failed to connect to the email server!") from e
 
         # Greet the server
         server.ehlo()
@@ -84,32 +87,20 @@ class Email:
             try:
                 server.starttls()
             except:
-                self.write_message("TLS failed to start. Proceeding without encryption!")
+                if self.force_tls:
+                    raise Exception("TLS failed to start and but is set to be required!")
+                else:
+                    self.warning("TLS failed to start. Proceeding without encryption!")
+
         try: # Try to login, if it fails, write an error message and raise an exception
             server.login(self.username, self.password)
         except Exception as e:
-            self.write_message("Server login failed, please check username and password!")
-            raise e
+            raise Exception("Server login failed, please check username and password!") from e
 
         # Try to send the email, if it fails, write an error message and raise an exception
         try:
             server.sendmail(str(self.from_address), str(to_address), m.as_string())
         except Exception as e:
-            self.write_message("Sending mail failed!")
-            raise e
+            raise Exception("Sending mail failed!") from e
 
         server.close()
-
-        # Inform the user that the message has been sent
-        print("Sucessfully sent email. From: " + str(self.from_address) + ", To: " + str(to_address) + ", Subject: " + str(subject))
-
-    def write_message(message):
-        """
-        Right now this prints a message to stdout, but I plan to have it log in the future
-
-        Arguments:
-            message (str) - The message to display
-        """
-
-        print(message)
-

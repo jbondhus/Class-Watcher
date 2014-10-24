@@ -45,13 +45,45 @@ def report_error(exception, user_message="Something has gone wrong, debugging in
             settings.email.priority
         )
 
-    write_message("An error has occured, an attempt will be made to email the information to the address you specified")
-
     try: # Try to send the email
         emailer.send(settings.email.to_address, __title__ + " Error", message)
     except Exception as e: # If sending the email fails, write an error message to the screen - logging will be implemented later
-        write_message("Sending the error email failed!")
+        logging.critical("Sending the error email failed!")
         raise e
+
+def configure_logging():
+    if settings.logging.log_level.lower() == "disabled":
+        log_level = logging.NOTSET
+    elif settings.logging.log_level.lower() == "debug":
+        log_level = logging.DEBUG
+    elif settings.logging.log_level.lower() == "info":
+        log_level = logging.INFO
+    elif settings.logging.log_level.lower() == "warning":
+        log_level = logging.WARNING
+    elif settings.logging.log_level.lower() == "error":
+        log_level = logging.ERROR
+    elif settings.logging.log_level.lower() == "critical":
+        log_level = logging.CRITICAL
+    else:
+        print("Please specify a valid logging option - valid options are as follows:")
+        print("Disabled - disables logging")
+        print("Debug    - Debug messages and all below")
+        print("Info     - Informational messages and all below")
+        print("Warning  - Warning messages and all below")
+        print("Error    - Error messages and all below")
+        print("Critical - Critical messages and all below")
+        exit(1)
+
+    if settings.logging.clear_log_on_start:
+        with open(settings.logging.log_file_location, 'w'):
+            pass
+
+    logging.basicConfig(
+        filename=settings.logging.log_file_location,
+        level=log_level,
+        format=settings.logging.log_format_string,
+        datefmt=settings.logging.log_date_format
+    )
 
 def initialize():
     """
@@ -69,10 +101,12 @@ def initialize():
         settings.email.hostname,
         settings.email.username,
         settings.email.password,
-        settings.email.priority
+        settings.email.priority,
+        settings.email.tls_enabled,
+        settings.email.force_tls
     )
 
-    # Initialize the persistant database
+    # Initialize the persistent database
     storage = FileStorage.FileStorage(settings.database_path)
     db = DB(storage)
     connection = db.open()
@@ -99,11 +133,13 @@ def initialize():
 def main():
     # Most exceptions will be handled and reported by the main method
     try:
+        configure_logging() # Configure logging first
         initialize() # Initialize the persistent variables and the emailer
 
         # Save whether the section is open before we update
         pre_update_is_section_open = root['section_info'].is_section_open()
 
+        logging.info("Updating section info")
         root['section_info'].update() # Update the section information
 
         # After the section has been updated, save the new information about whether or not it is open
@@ -113,8 +149,10 @@ def main():
         if (pre_update_is_section_open != post_update_is_section_open):
             notify(post_update_is_section_open, root['section_info'].get_course_name())
         else:
-            write_message("Nothing has changed, not emailing")
+            logging.info("Nothing has changed, not emailing")
             exit(0)
+
+        logging.debug("Committing transaction")
 
         # Commit the transaction
         transaction.commit()
@@ -133,12 +171,15 @@ def notify(is_section_open, course_name):
     """
 
     if is_section_open:
+        logging.info("Sending email: The course " + course_name + " has opened for registration!")
         subject = "The course " + course_name + " has opened for registration!" # The subject of the email message
         message = "Go to the following link to view it and verify: \n\n" + settings.search_url
     else:
+        logging.info("Sending email: The course " + course_name + " has closed for registration!")
         subject = "The course " + course_name + " has closed for registration!" # The subject of the email message
         message = "Go to the following link to view it and verify: \n\n" + settings.search_url
     emailer.send(settings.email.to_address, subject, message)
+    logging.info("Message sent successfully!")
 
 def write_message(message):
     """
@@ -165,9 +206,7 @@ try:
     # before email) so if any errors happen importing the rest of the modules they are reported
     from Email import Email
 
-    # Some BS to shut up the interpreter
     import logging
-    logging.basicConfig()
     
     # Import system modules (mainly used for exiting the program)
     import os

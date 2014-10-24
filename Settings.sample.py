@@ -6,6 +6,16 @@ class Settings:
     # The path to the persistant storage database (this may be absolute or relative, but the program should (haven't tested this) throw an exception if it's read-only)
     database_path = "persistent.db"
 
+    class Logging:
+        # Logging settings
+        log_format_string = "%(asctime)s.%(msecs)d %(levelname)s - %(processName)s - %(module)s - %(funcName)s: %(message)s"
+        log_date_format = "%Y-%m-%d %H:%M:%S"
+
+        log_level = "Info"
+        log_file_location = "class_watcher.log"
+
+        clear_log_on_start = False
+
     class Email:
         # Email Settings
 
