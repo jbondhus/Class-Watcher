@@ -3,3 +3,7 @@
 __pycache__
 Settings.py
 *.log
+*.db
+*.db.index
+*.db.lock
+*.db.tmp
