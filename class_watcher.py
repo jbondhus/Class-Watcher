@@ -2,7 +2,7 @@
 
 __title__ = "Class Monitoring Bot"
 __author__ = "Jonathan Bondhus"
-__version__ = "1.4 beta"
+__version__ = "2.0 beta"
 
 ## Version Information
 # 0.1 alpha - Initial prototype
@@ -13,10 +13,32 @@ __version__ = "1.4 beta"
 #            so withstanding a server error or corrupted python installation they should always be installed)
 # 1.2 beta - Added tracebacks to email reports and modified email reporting method parameters
 # 1.3 beta - Fixed bugs with searching for the course name, improved reliability of matches
-# 1.3 beta - Modified for python 3, moved settings to separate file
+# 1.4 beta - Modified for python 3, moved settings to separate file
+# 2.0 beta - Added persistence to error reporting - this prevents spamming of identical errors
 
-## TODO
-# - Add persistent storage for last error so that multiple error messages aren't sent repeatedly upon error
+def report(exception, user_message="Something has gone wrong, debugging information follows:\n\n"):
+    """
+    Reports any errors that arise
+
+    Defaults:
+        user_message = "Something has gone wrong, debugging information follows:\n\n"
+
+    Parameters:
+        exception (Exception) - The exception object to report
+        user_message (str) - An optional message to include (If included, this will override the default message)
+    """
+
+    try:
+        root['error_reporter']
+    except:
+        root['error_reporter'] = ErrorReporting(emailer)
+
+    try:
+        root['error_reporter'].report_error(exception, user_message)
+        transaction.commit()
+    except Exception as e:
+        transaction.abort()
+        raise Exception("Failed to report the error!") from e
 
 def configure_logging():
     if settings.logging.log_level.lower() == "disabled":
@@ -57,15 +79,6 @@ def initialize():
     Initializes the global variables
     """
 
-    # Declare global the variables that must be global
-    global root
-
-    # Initialize the persistent database
-    storage = FileStorage.FileStorage(settings.database_path)
-    db = DB(storage)
-    connection = db.open()
-    root = connection.root()
-
     # Make sure the section info object is initialized
     try:
         root['section_info']
@@ -88,36 +101,28 @@ def initialize():
         exit(0)
 
 def main():
-    # Most exceptions will be handled and reported by the main method
-    try:
-        configure_logging() # Configure logging first
-        initialize() # Initialize the persistent variables and the emailer
+    initialize() # Initialize the persistent variables and the emailer
 
-        # Save whether the section is open before we update
-        pre_update_is_section_open = root['section_info'].is_section_open()
+    # Save whether the section is open before we update
+    pre_update_is_section_open = root['section_info'].is_section_open()
 
-        logging.info("Updating section info")
-        root['section_info'].update() # Update the section information
+    logging.info("Updating section info")
+    root['section_info'].update() # Update the section information
 
-        # After the section has been updated, save the new information about whether or not it is open
-        post_update_is_section_open = root['section_info'].is_section_open()
+    # After the section has been updated, save the new information about whether or not it is open
+    post_update_is_section_open = root['section_info'].is_section_open()
 
-        # If the section has changed, notify the user, otherwise, print a message and exit
-        if (pre_update_is_section_open != post_update_is_section_open):
-            logging.info("Section status has changed")
-            notify(post_update_is_section_open, root['section_info'].get_course_name())
-        else:
-            logging.info("Nothing has changed, not emailing")
-            exit(0)
+    # If the section has changed, notify the user, otherwise, print a message and exit
+    if (pre_update_is_section_open != post_update_is_section_open):
+        logging.info("Section status has changed")
+        notify(post_update_is_section_open, root['section_info'].get_course_name())
+    else:
+        logging.info("Nothing has changed, not emailing")
 
-        logging.debug("Committing transaction")
+    logging.debug("Committing transaction")
 
-        # Commit the transaction
-        transaction.commit()
-
-    except Exception as e: # If an error occurs anywhere, report it
-        reporter.report_error(e)
-        raise e
+    # Commit the transaction
+    transaction.commit()
 
 def notify(is_section_open, course_name):
     """
@@ -139,72 +144,66 @@ def notify(is_section_open, course_name):
     emailer.send(settings.email.to_address, subject, message)
     logging.info("Message sent successfully!")
 
-def write_message(message):
-    """
-    Right now this prints a message to stdout, but I plan to have it log in the future
-
-    Arguments:
-        message (str) - The message to display
-
-    Returns: Nothing
-    """
-
-    print(str(message))
-
-# Try importing the required modules, attempt to email the error if something goes wrong
 try:
-    # Import settings values
-    from Settings import Settings
-    settings = Settings()
+    # All imports and the call to the main method go in a try/except statement so that we can catch any errors
 
-    # Import the traceback module for retrieving tracback information from exceptions
-    import traceback
+    try:
+        # Try importing the required modules, attempt to email the error if something goes wrong
 
-    # Import my email module - this must be done first along with traceback (which is needed by email so it must be
-    # before email) so if any errors happen importing the rest of the modules they are reported
-    from Email import Email
+        # Import settings values
+        from Settings import Settings
+        settings = Settings()
 
-    # Initialize the email object first so that we can send an error message if something breaks
-    emailer = Email(
-        settings.email.from_name,
-        settings.email.from_address,
-        settings.email.hostname,
-        settings.email.username,
-        settings.email.password,
-        settings.email.priority,
-        settings.email.tls_enabled,
-        settings.email.force_tls
-    )
+        import logging
+        configure_logging() # Configure logging first
 
-    import logging
-    
-    # Import system modules (mainly used for exiting the program)
-    import os
-    import sys
+        # Import the traceback module for retrieving tracback information from exceptions
+        import traceback
 
-    from ErrorReporting import ErrorReporting
-    global reporter
-    reporter = ErrorReporting(emailer)
-    
-    # Import modules for the persistent object database
-    from ZODB import FileStorage, DB
-    import transaction
-    
-    # Import my section information module
-    from Section import Section
+        # Import modules for the persistent object database
+        from ZODB import FileStorage, DB
+        import transaction
+
+        # Initialize the persistent database
+        storage = FileStorage.FileStorage(settings.database_path)
+        db = DB(storage)
+        connection = db.open()
+        root = connection.root()
+
+        # Import my email module - this must be done first along with traceback (which is needed by email so it must be
+        # before email) so if any errors happen importing the rest of the modules they are reported
+        from Email import Email
+
+        # Initialize the email object first so that we can send an error message if something breaks
+        emailer = Email(
+            settings.email.from_name,
+            settings.email.from_address,
+            settings.email.hostname,
+            settings.email.username,
+            settings.email.password,
+            settings.email.priority,
+            settings.email.tls_enabled,
+            settings.email.force_tls
+        )
+
+        from ErrorReporting import ErrorReporting
+        global reporter
+        reporter = ErrorReporting(emailer)
+
+        # Import my section information module
+        from Section import Section
+    except Exception as e:
+        report(e)
+
+    main()
 except Exception as e:
     try:
-    # Import the error reporting class
-        from ErrorReporting import ErrorReporting
-        try:
-            reporter
-        except:
-            reporter = ErrorReporting(emailer)
-        reporter.report_error(e)
-    except NameError as e:
-        logging.critical("The email module must not have been able to been imported!")
-        raise e
+        report(e)
+    except:
+        pass
 
-main()
+    logging.critical("Exception! Traceback Follows: \n" + traceback.format_exc())
+    raise e
+
 exit(0) # Exit the program
 
