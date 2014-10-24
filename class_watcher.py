@@ -16,40 +16,7 @@ __version__ = "1.4 beta"
 # 1.3 beta - Modified for python 3, moved settings to separate file
 
 ## TODO
-# - Add persistant storage for last error so that multiple error messages aren't sent repeatedly upon error
-
-def report_error(exception, user_message="Something has gone wrong, debugging information follows:\n\n"):
-    """
-    Reports any errors that arise
-
-    Defaults:
-        user_message = "Something has gone wrong, debugging information follows:\n\n"
-
-    Parameters:
-        exception (Exception) - The exception object to report
-        user_message (str) - An optional message to include (If included, this will override the default message)
-    """
-
-    message = str(user_message) + traceback.format_exc()
-    
-    # Make sure that the emailer is initialized, this method MUST not fail
-    try:
-        emailer
-    except:
-        emailer = Email(
-            settings.email.from_name,
-            settings.email.from_address,
-            settings.email.hostname,
-            settings.email.username,
-            settings.email.password,
-            settings.email.priority
-        )
-
-    try: # Try to send the email
-        emailer.send(settings.email.to_address, __title__ + " Error", message)
-    except Exception as e: # If sending the email fails, write an error message to the screen - logging will be implemented later
-        logging.critical("Sending the error email failed!")
-        raise e
+# - Add persistent storage for last error so that multiple error messages aren't sent repeatedly upon error
 
 def configure_logging():
     if settings.logging.log_level.lower() == "disabled":
@@ -91,20 +58,7 @@ def initialize():
     """
 
     # Declare global the variables that must be global
-    global emailer
     global root
-
-    # Initialize the email object first so that we can send an error message if something breaks
-    emailer = Email(
-        settings.email.from_name,
-        settings.email.from_address,
-        settings.email.hostname,
-        settings.email.username,
-        settings.email.password,
-        settings.email.priority,
-        settings.email.tls_enabled,
-        settings.email.force_tls
-    )
 
     # Initialize the persistent database
     storage = FileStorage.FileStorage(settings.database_path)
@@ -162,7 +116,7 @@ def main():
         transaction.commit()
 
     except Exception as e: # If an error occurs anywhere, report it
-        report_error(e)
+        reporter.report_error(e)
         raise e
 
 def notify(is_section_open, course_name):
@@ -210,13 +164,29 @@ try:
     # before email) so if any errors happen importing the rest of the modules they are reported
     from Email import Email
 
+    # Initialize the email object first so that we can send an error message if something breaks
+    emailer = Email(
+        settings.email.from_name,
+        settings.email.from_address,
+        settings.email.hostname,
+        settings.email.username,
+        settings.email.password,
+        settings.email.priority,
+        settings.email.tls_enabled,
+        settings.email.force_tls
+    )
+
     import logging
     
     # Import system modules (mainly used for exiting the program)
     import os
     import sys
+
+    from ErrorReporting import ErrorReporting
+    global reporter
+    reporter = ErrorReporting(emailer)
     
-    # Import modules for the persistant object database
+    # Import modules for the persistent object database
     from ZODB import FileStorage, DB
     import transaction
     
@@ -224,10 +194,16 @@ try:
     from Section import Section
 except Exception as e:
     try:
-        report_error(e)
+    # Import the error reporting class
+        from ErrorReporting import ErrorReporting
+        try:
+            reporter
+        except:
+            reporter = ErrorReporting(emailer)
+        reporter.report_error(e)
     except NameError as e:
         logging.critical("The email module must not have been able to been imported!")
-    raise e
+        raise e
 
 main()
 exit(0) # Exit the program
