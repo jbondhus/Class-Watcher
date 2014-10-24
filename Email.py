@@ -1,9 +1,6 @@
 # Import smtplib for the actual sending functionality
 import smtplib
 
-# Import sys for exiting
-import sys
-
 # Import the email modules we'll need
 from email.message import Message
 
@@ -77,7 +74,7 @@ class Email:
             server = smtplib.SMTP(self.hostname, timeout=5)
         except:
             self.write_message("Please check your hostname settings!")
-            sys.exit(1)
+            exit(1)
 
         # Greet the server
         server.ehlo()

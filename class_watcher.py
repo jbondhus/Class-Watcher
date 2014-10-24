@@ -48,7 +48,7 @@ def report_error(exception, user_message="Something has gone wrong, debugging in
     write_message("An error has occured, an attempt will be made to email the information to the address you specified")
 
     try: # Try to send the email
-        emailer.send(to_address, __title__ + " Error", message)
+        emailer.send(settings.email.to_address, __title__ + " Error", message)
     except Exception as e: # If sending the email fails, write an error message to the screen - logging will be implemented later
         write_message("Sending the error email failed!")
         raise e
@@ -94,7 +94,7 @@ def initialize():
         # If it has, update the database, notify the user, and quit
         emailer.send(settings.email.to_address, "The course being watched has been changed!", "The course being watched has been "
             + "changed to " + root['section_info'].get_course_name())
-        sys.exit()
+        exit(0)
 
 def main():
     # Most exceptions will be handled and reported by the main method
@@ -114,7 +114,7 @@ def main():
             notify(post_update_is_section_open, root['section_info'].get_course_name())
         else:
             write_message("Nothing has changed, not emailing")
-            sys.exit()
+            exit(0)
 
         # Commit the transaction
         transaction.commit()
@@ -187,5 +187,5 @@ except Exception as e:
     raise e
 
 main()
-sys.exit() # Exit the program
+exit(0) # Exit the program
 
