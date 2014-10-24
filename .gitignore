@@ -1,6 +1,7 @@
 # PyCharm and Python cache files
 .idea
 __pycache__
+*.pyc
 Settings.py
 *.log
 *.db
