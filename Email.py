@@ -88,14 +88,14 @@ class Email:
                 self.write_message("TLS failed to start. Proceeding without encryption!")
         try: # Try to login, if it fails, write an error message and raise an exception
             server.login(self.username, self.password)
-        except Exception, e:
+        except Exception as e:
             self.write_message("Server login failed, please check username and password!")
             raise e
 
         # Try to send the email, if it fails, write an error message and raise an exception
         try:
             server.sendmail(str(self.from_address), str(to_address), m.as_string())
-        except Exception, e:
+        except Exception as e:
             self.write_message("Sending mail failed!")
             raise e
 

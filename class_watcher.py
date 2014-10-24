@@ -73,7 +73,7 @@ def report_error(exception, user_message="Something has gone wrong, debugging in
 
 	try: # Try to send the email
 		emailer.send(to_address, __title__ + " Error", message)
-	except Exception, e: # If sending the email fails, write an error message to the screen - logging will be implemented later
+	except Exception as e: # If sending the email fails, write an error message to the screen - logging will be implemented later
 		write_message("Sending the error email failed!")
 		raise e
 
@@ -136,7 +136,7 @@ def main():
 		# Commit the transaction
 		transaction.commit()
 
-	except Exception, e: # If an error occurs anywhere, report it
+	except Exception as e: # If an error occurs anywhere, report it
 		report_error(e)
 		raise e
 
@@ -192,10 +192,10 @@ try:
 	
 	# Import my section information module
 	from Section import Section
-except Exception, e:
+except Exception as e:
 	try:
 		report_error(e)
-	except NameError, e:
+	except NameError as e:
 		write_message("The email module must not have been able to been imported!")
 	raise e
 

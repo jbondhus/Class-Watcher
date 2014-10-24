@@ -2,7 +2,7 @@
 import requests
 
 # Import BeautifulSoup for parsing the html
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 
 # Import the regular expression module for parsing text
 import re
@@ -26,7 +26,7 @@ class Section(Persistent):
 
 		try:
 			requests.get(search_url, timeout=60)
-		except Exception, e:
+		except Exception as e:
 			raise ValueError("Please check that it is possible to connect to the URL you specified!")
 
 		self.search_url = str(search_url)
