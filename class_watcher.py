@@ -97,7 +97,7 @@ def initialize():
         root['section_info'].update()
         transaction.commit()
         # If it has, update the database, notify the user, and quit
-        emailer.send(to_address, "The course being watched has been changed!", "The course being watched has been "
+        emailer.send(settings.email.to_address, "The course being watched has been changed!", "The course being watched has been "
             + "changed to " + root['section_info'].get_course_name())
         sys.exit()
 
@@ -143,7 +143,7 @@ def notify(is_section_open, course_name):
     else:
         subject = "The course " + course_name + " has closed for registration!" # The subject of the email message
         message = "Go to the following link to view it and verify: \n\n" + settings.search_url
-    emailer.send(to_address, subject, message)
+    emailer.send(settings.email.to_address, subject, message)
 
 def write_message(message):
     """

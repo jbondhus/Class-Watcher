@@ -22,3 +22,5 @@ class Settings:
         to_address = "jonathan.bondhus@gmail.com" # The address the email message is being sent to
 
         priority = 1 # The priority of the message (1 is the highest, 3 is normal, 5 is the lowest)
+
+    email = Email()
