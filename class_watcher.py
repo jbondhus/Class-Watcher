@@ -125,6 +125,9 @@ def initialize():
         root['section_info'] = Section(settings.search_url)
         root['section_info'].update()
         transaction.commit()
+
+        logging.info("The course being watched has changed!")
+
         # If it has, update the database, notify the user, and quit
         emailer.send(settings.email.to_address, "The course being watched has been changed!", "The course being watched has been "
             + "changed to " + root['section_info'].get_course_name())
@@ -147,6 +150,7 @@ def main():
 
         # If the section has changed, notify the user, otherwise, print a message and exit
         if (pre_update_is_section_open != post_update_is_section_open):
+            logging.info("Section status has changed")
             notify(post_update_is_section_open, root['section_info'].get_course_name())
         else:
             logging.info("Nothing has changed, not emailing")
@@ -222,7 +226,7 @@ except Exception as e:
     try:
         report_error(e)
     except NameError as e:
-        write_message("The email module must not have been able to been imported!")
+        logging.critical("The email module must not have been able to been imported!")
     raise e
 
 main()
