@@ -41,6 +41,8 @@ def report(exception, user_message="Something has gone wrong, debugging informat
         raise Exception("Failed to report the error!") from e
 
 def configure_logging():
+
+    # Sets the logging level
     if settings.logging.log_level.lower() == "disabled":
         log_level = logging.NOTSET
     elif settings.logging.log_level.lower() == "debug":
