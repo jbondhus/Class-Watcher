@@ -11,7 +11,7 @@ __version__ = "2.0 beta"
 # 1.1 beta - Minor syntax clean-ups and more commenting added. Moved imports into a try-except block so that any errors
 #            have a much higher chance of being reported (the modules my email module uses are standard python modules,
 #            so withstanding a server error or corrupted python installation they should always be installed)
-# 1.2 beta - Added tracebacks to email reports and modified email reporting method parameters
+# 1.2 beta - Added stack trace to email reports and modified email reporting method parameters
 # 1.3 beta - Fixed bugs with searching for the course name, improved reliability of matches
 # 1.4 beta - Modified for python 3, moved settings to separate file
 # 2.0 beta - Added persistence to error reporting - this prevents spamming of identical errors
