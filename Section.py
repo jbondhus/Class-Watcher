@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 # Import the regular expression module for parsing text
 import re
 
-# This class has to be persistant to store the data
+# This class has to be persistent to store the data
 from persistent import Persistent
 
 # Defines course section objects
