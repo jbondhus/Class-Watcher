@@ -4,7 +4,7 @@ __title__ = "Class Monitoring Bot"
 __author__ = "Jonathan Bondhus"
 __version__ = "2.0 beta"
 
-## Version Information
+# # Version Information
 # 0.1 alpha - Initial prototype
 # 0.2 alpha - Simplified some programming, and downgraded from BeautifulSoup 4 to BeautifulSoup 3 because of bugs
 # 1.0 beta - Complete overhaul of program structure, re-wrote almost from the ground up
@@ -40,8 +40,8 @@ def report(exception, user_message="Something has gone wrong, debugging informat
         transaction.abort()
         raise Exception("Failed to report the error!") from e
 
-def configure_logging():
 
+def configure_logging():
     # Sets the logging level
     if settings.logging.log_level.lower() == "disabled":
         log_level = logging.NOTSET
@@ -76,6 +76,7 @@ def configure_logging():
         datefmt=settings.logging.log_date_format
     )
 
+
 def initialize():
     """
     Initializes the global variables
@@ -98,18 +99,20 @@ def initialize():
         logging.info("The course being watched has changed!")
 
         # If it has, update the database, notify the user, and quit
-        emailer.send(settings.email.to_address, "The course being watched has been changed!", "The course being watched has been "
-            + "changed to " + root['section_info'].get_course_name())
+        emailer.send(settings.email.to_address, "The course being watched has been changed!",
+                     "The course being watched has been "
+                     + "changed to " + root['section_info'].get_course_name())
         exit(0)
 
+
 def main():
-    initialize() # Initialize the persistent variables and the emailer
+    initialize()  # Initialize the persistent variables and the emailer
 
     # Save whether the section is open before we update
     pre_update_is_section_open = root['section_info'].is_section_open()
 
     logging.info("Updating section info")
-    root['section_info'].update() # Update the section information
+    root['section_info'].update()  # Update the section information
 
     # After the section has been updated, save the new information about whether or not it is open
     post_update_is_section_open = root['section_info'].is_section_open()
@@ -126,6 +129,7 @@ def main():
     # Commit the transaction
     transaction.commit()
 
+
 def notify(is_section_open, course_name):
     """
     Notifies the user whether the section status has changed
@@ -137,14 +141,15 @@ def notify(is_section_open, course_name):
 
     if is_section_open:
         logging.info("Sending email: The course " + course_name + " has opened for registration!")
-        subject = "The course " + course_name + " has opened for registration!" # The subject of the email message
+        subject = "The course " + course_name + " has opened for registration!"  # The subject of the email message
         message = "Go to the following link to view it and verify: \n\n" + settings.search_url
     else:
         logging.info("Sending email: The course " + course_name + " has closed for registration!")
-        subject = "The course " + course_name + " has closed for registration!" # The subject of the email message
+        subject = "The course " + course_name + " has closed for registration!"  # The subject of the email message
         message = "Go to the following link to view it and verify: \n\n" + settings.search_url
     emailer.send(settings.email.to_address, subject, message)
     logging.info("Message sent successfully!")
+
 
 try:
     # All imports and the call to the main method go in a try/except statement so that we can catch any errors
@@ -154,10 +159,12 @@ try:
 
         # Import settings values
         from Settings import Settings
+
         settings = Settings()
 
         import logging
-        configure_logging() # Configure logging first
+
+        configure_logging()  # Configure logging first
 
         # Import the traceback module for retrieving tracback information from exceptions
         import traceback
@@ -189,6 +196,7 @@ try:
         )
 
         from ErrorReporting import ErrorReporting
+
         global reporter
         reporter = ErrorReporting(emailer)
 
@@ -207,5 +215,5 @@ except Exception as e:
     logging.critical("Exception! Traceback Follows: \n" + traceback.format_exc())
     raise e
 
-exit(0) # Exit the program
+exit(0)  # Exit the program
 

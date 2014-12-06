@@ -22,19 +22,19 @@ class Settings:
         # Email Settings
 
         # The server settings
-        hostname = "" # The SMTP server hostname
-        tls_enabled = True    # Whether or not TLS is enabled
+        hostname = ""  # The SMTP server hostname
+        tls_enabled = True  # Whether or not TLS is enabled
         force_tls = False
 
         # The email username and password
         username = ""
         password = ""
 
-        from_name = "Class Monitoring Bot" # The name to appear in the from section
-        from_address = "" # The address the email message is being sent from
-        to_address = "" # The address the email message is being sent to
+        from_name = "Class Monitoring Bot"  # The name to appear in the from section
+        from_address = ""  # The address the email message is being sent from
+        to_address = ""  # The address the email message is being sent to
 
-        priority = 1 # The priority of the message (1 is the highest, 3 is normal, 5 is the lowest)
+        priority = 1  # The priority of the message (1 is the highest, 3 is normal, 5 is the lowest)
 
     logging = Logging()
     email = Email()

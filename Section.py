@@ -38,9 +38,10 @@ class Section(Persistent):
         Updates the HTML
         """
 
-        response = requests.get(self.search_url, timeout=5) # Query the search url
-        self.html = response.text # Get the html from the response
-        self.soup = BeautifulSoup(self.html) # Parse the HTML to create a BeautifulSoup object (similar to a parse tree)
+        response = requests.get(self.search_url, timeout=5)  # Query the search url
+        self.html = response.text  # Get the html from the response
+        self.soup = BeautifulSoup(
+            self.html)  # Parse the HTML to create a BeautifulSoup object (similar to a parse tree)
 
     def is_section_open(self):
         """
@@ -74,13 +75,13 @@ class Section(Persistent):
         # The formatted name (parsed with a regular expression from the HTML)
         queried_name = re.search('[A-Z]{4}\s[0-9]{3}', absolute_name).group()
 
-        if (queried_name != None): # If we aren't able to format it, set the class name to the absolute name (the one
-                                   # before formatting) as a fail-over
+        if (queried_name != None):  # If we aren't able to format it, set the class name to the absolute name (the one
+            # before formatting) as a fail-over
             course_name = queried_name
         else:
             course_name = absolute_name
 
-        return course_name      
+        return course_name
 
     def url_equals(self, url):
         """

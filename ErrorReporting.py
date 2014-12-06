@@ -1,4 +1,5 @@
 from Settings import Settings
+
 settings = Settings()
 
 import traceback
@@ -7,6 +8,7 @@ import logging
 
 # This class has to be persistent
 from persistent import Persistent
+
 
 class ErrorReporting(Persistent):
     def __init__(self, emailer):
@@ -39,7 +41,7 @@ class ErrorReporting(Persistent):
         else:
             self.last_message = message
 
-            try: # Try to send the email
+            try:  # Try to send the email
                 self.emailer.send(settings.email.to_address, "Class Monitoring Bot" + " Error", message)
             except Exception as e:
                 logging.critical("Sending the error email failed!")

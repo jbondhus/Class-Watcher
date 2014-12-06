@@ -10,7 +10,8 @@ from email.message import Message
 
 # This class defines email objects. They are constructed with the server and sender information, and sent with the send method
 class Email:
-    def __init__(self, from_name, from_address, hostname, username, password, priority=3, tls_enabled=True, force_tls=True):
+    def __init__(self, from_name, from_address, hostname, username, password, priority=3, tls_enabled=True,
+                 force_tls=True):
         """
         Constructs an email object
 
@@ -92,7 +93,7 @@ class Email:
                 else:
                     self.warning("TLS failed to start. Proceeding without encryption!")
 
-        try: # Try to login, if it fails, write an error message and raise an exception
+        try:  # Try to login, if it fails, write an error message and raise an exception
             server.login(self.username, self.password)
         except Exception as e:
             raise Exception("Server login failed, please check username and password!") from e
