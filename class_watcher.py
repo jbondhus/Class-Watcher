@@ -16,6 +16,11 @@ __version__ = "2.0 beta"
 # 1.4 beta - Modified for python 3, moved settings to separate file
 # 2.0 beta - Added persistence to error reporting - this prevents spamming of identical errors
 
+import os
+
+# Set the working directory to the folder this script is in
+os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
+
 def report(exception, user_message="Something has gone wrong, debugging information follows:\n\n"):
     """
     Reports any errors that arise
