@@ -18,6 +18,7 @@ __version__ = "2.1 beta"
 # 2.1 beta - Fixed working directory bug, fixed Beautiful Soup 4 warning
 
 import os
+import sys
 
 # Set the working directory to the folder this script is in
 os.chdir(os.path.dirname(os.path.realpath(sys.argv[0])))
