@@ -2,7 +2,7 @@
 
 __title__ = "Class Monitoring Bot"
 __author__ = "Jonathan Bondhus"
-__version__ = "2.0 beta"
+__version__ = "2.1 beta"
 
 # # Version Information
 # 0.1 alpha - Initial prototype
@@ -15,6 +15,7 @@ __version__ = "2.0 beta"
 # 1.3 beta - Fixed bugs with searching for the course name, improved reliability of matches
 # 1.4 beta - Modified for python 3, moved settings to separate file
 # 2.0 beta - Added persistence to error reporting - this prevents spamming of identical errors
+# 2.1 beta - Fixed working directory bug, fixed Beautiful Soup 4 warning
 
 import os
 
