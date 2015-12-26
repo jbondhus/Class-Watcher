@@ -41,7 +41,8 @@ class Section(Persistent):
         response = requests.get(self.search_url, timeout=5)  # Query the search url
         self.html = response.text  # Get the html from the response
         self.soup = BeautifulSoup(
-            self.html)  # Parse the HTML to create a BeautifulSoup object (similar to a parse tree)
+            self.html, "html.parser"
+        )  # Parse the HTML to create a BeautifulSoup object (similar to a parse tree)
 
     def is_section_open(self):
         """
